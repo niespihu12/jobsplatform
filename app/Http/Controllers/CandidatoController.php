@@ -2,69 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Candidato;
 use App\Models\Vacante;
 use Illuminate\Http\Request;
 
 class CandidatoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Vacante $vacante)
+    public function index(Request $request, Vacante $vacante)
     {
-        //
-        return view ('candidatos.index', [
+        $query = $vacante->candidatos()->with('user');
+
+        // Filtro de búsqueda
+        if ($request->filled('busqueda')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->busqueda . '%')
+                  ->orWhere('email', 'like', '%' . $request->busqueda . '%');
+            });
+        }
+
+        // Filtro de score
+        $scoreMin = $request->input('scoreMin', 0);
+        $scoreMax = $request->input('scoreMax', 100);
+        $query->whereBetween('score', [$scoreMin, $scoreMax]);
+
+        $candidatos = $query->orderByDesc('score')->get();
+
+        // Filtros en colección
+        if ($request->filled('clasificacion')) {
+            $candidatos = $candidatos->filter(fn($c) => $c->clasificacion === $request->clasificacion);
+        }
+
+        if ($request->filled('recomendacion')) {
+            $candidatos = $candidatos->filter(fn($c) => 
+                strtolower($c->evaluacion_ia['recomendacion'] ?? '') === strtolower($request->recomendacion)
+            );
+        }
+
+        return view('candidatos.index', [
             'vacante' => $vacante,
+            'candidatos' => $candidatos->values(),
+            'filtros' => [
+                'busqueda' => $request->input('busqueda', ''),
+                'scoreMin' => $scoreMin,
+                'scoreMax' => $scoreMax,
+                'clasificacion' => $request->input('clasificacion', ''),
+                'recomendacion' => $request->input('recomendacion', '')
+            ]
         ]);
-
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Candidato $candidato)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Candidato $candidato)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Candidato $candidato)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Candidato $candidato)
-    {
-        //
     }
 }

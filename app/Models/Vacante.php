@@ -22,6 +22,7 @@ class Vacante extends Model
         'descripcion',
         'imagen',
         'user_id',
+        'limite_candidatos',
     ];
 
     public function categoria()
@@ -39,8 +40,21 @@ class Vacante extends Model
         return $this->hasMany(Candidato::class)->orderBy('created_at', 'DESC');
     }
 
-    public function reclutador(){
+    public function reclutador()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function criterios()
+    {
+        return $this->hasMany(Criterio::class);
+    }
+
+    public function limiteAlcanzado()
+    {
+        if (!$this->limite_candidatos) {
+            return false;
+        }
+        return $this->candidatos()->count() >= $this->limite_candidatos;
+    }
 }

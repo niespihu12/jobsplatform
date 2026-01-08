@@ -9,5 +9,16 @@ export default {
         './resources/views/**/*.blade.php',
     ],
 
+    theme: {
+        extend: {
+            colors: {
+                primary: '#4A4EDE',
+                secondary: '#DD2AB3',
+                dark: '#242065',
+                accent: '#65CBF7',
+            },
+        },
+    },
+
     plugins: [forms],
 };

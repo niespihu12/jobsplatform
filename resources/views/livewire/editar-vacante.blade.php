@@ -58,14 +58,77 @@
     </div>
 
     <div>
+        <x-input-label for="limite_candidatos" :value="__('Límite de Candidatos (Opcional)')"/>
+        <x-text-input id="limite_candidatos" class="block mt-1 w-full" type="number" wire:model="limite_candidatos" 
+            placeholder="Ej: 50" min="1" />
+        <p class="text-xs text-gray-500 mt-1">Deja vacío para no establecer límite</p>
+        @error('limite_candidatos')
+        <livewire:mostrar-alerta :message="$message"/>
+        @enderror
+    </div>
+
+    <div>
         <x-input-label for="descripcion" :value="__('Descripcion Puesto')"/>
         <textarea wire:model="descripcion" placeholder="Descripcion general del puesto, experiencia"
                   class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm w-full h-72">
-
        </textarea>
         @error('descripcion')
         <livewire:mostrar-alerta :message="$message"/>
         @enderror
+    </div>
+
+    {{-- Criterios IA --}}
+    <div class="mb-5">
+        <h3 class="text-xl font-bold mb-3">Criterios de Evaluación IA</h3>
+
+        @foreach($criterios as $i => $criterio)
+        <div class="border rounded p-4 mb-3 bg-gray-50">
+            <div class="flex justify-between mb-3">
+                <h4 class="font-semibold">Criterio {{ $i + 1 }}</h4>
+                @if($i > 0)
+                <button type="button" wire:click="eliminarCriterio({{ $i }})" class="text-red-600">✕</button>
+                @endif
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <x-input-label :value="'Nombre'" />
+                    <x-text-input wire:model="criterios.{{ $i }}.nombre" type="text" class="w-full" placeholder="Ej: Laravel 5+ años" />
+                    <x-input-error :messages="$errors->get('criterios.'.$i.'.nombre')" class="mt-2" />
+                </div>
+
+                <div>
+                    <x-input-label :value="'Tipo'" />
+                    <select wire:model="criterios.{{ $i }}.tipo" class="border-gray-300 rounded-md w-full">
+                        <option value="experiencia">Experiencia</option>
+                        <option value="educacion">Educación</option>
+                        <option value="habilidad">Habilidad</option>
+                        <option value="idioma">Idioma</option>
+                        <option value="certificacion">Certificación</option>
+                    </select>
+                </div>
+
+                <div>
+                    <x-input-label :value="'Peso (1-10)'" />
+                    <x-text-input wire:model="criterios.{{ $i }}.peso" type="number" min="1" max="10" class="w-full" />
+                </div>
+
+                <div class="flex items-center pt-6">
+                    <input wire:model="criterios.{{ $i }}.obligatorio" type="checkbox" class="rounded">
+                    <span class="ml-2 text-sm">Obligatorio</span>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <x-input-label :value="'Descripción'" />
+                <textarea wire:model="criterios.{{ $i }}.descripcion" class="border-gray-300 rounded-md w-full" rows="2"></textarea>
+            </div>
+        </div>
+        @endforeach
+
+        <button type="button" wire:click="agregarCriterio" class="bg-gray-200 hover:bg-gray-300 font-bold py-2 px-4 rounded">
+            + Agregar Criterio
+        </button>
     </div>
 
     <div>
